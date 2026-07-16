@@ -1,0 +1,35 @@
+{
+  "manifest_version": 1,
+  "type": "device",
+  "name": "MELCloud",
+  "description": {
+    "en": "Control your Mitsubishi Electric air conditioners through the MELCloud cloud service.",
+    "fr": "Contrôlez vos climatiseurs Mitsubishi Electric via le service cloud MELCloud."
+  },
+  "version": "1.0.0",
+  "docker_image": "ghcr.io/gladysassistant/gladys-melcloud:1.0.0",
+  "gladys_version": ">=4.62.0",
+  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/gladys-melcloud/master/cover.png",
+  "config_schema": [
+    {
+      "key": "username",
+      "type": "string",
+      "label": { "en": "MELCloud email", "fr": "E-mail MELCloud" },
+      "description": {
+        "en": "The email address of your MELCloud account.",
+        "fr": "L'adresse e-mail de votre compte MELCloud."
+      },
+      "required": true
+    },
+    {
+      "key": "password",
+      "type": "secret",
+      "label": { "en": "MELCloud password", "fr": "Mot de passe MELCloud" },
+      "description": {
+        "en": "The password of your MELCloud account.",
+        "fr": "Le mot de passe de votre compte MELCloud."
+      },
+      "required": true
+    }
+  ]
+}
