@@ -29,16 +29,16 @@ let config = normalizeConfig();
 
 /**
  * Extract the MELCloud DeviceID from a device external id
- * (`ext:<selector>:<DeviceID>`).
+ * (`ext:<selector>:<type>:<DeviceID>`, built with gladys.externalIds()).
  */
 function parseDeviceId(externalId) {
   const prefix = gladys.externalId('');
   if (!externalId || !externalId.startsWith(prefix)) {
     throw new Error(`MELCloud device external_id is invalid: "${externalId}" should start with "${prefix}"`);
   }
-  const deviceId = externalId.slice(prefix.length);
-  if (deviceId.length === 0) {
-    throw new Error(`MELCloud device external_id is invalid: "${externalId}" has no device id`);
+  const deviceId = externalId.split(':').pop();
+  if (!deviceId || externalId.slice(prefix.length).split(':').length !== 2) {
+    throw new Error(`MELCloud device external_id is invalid: "${externalId}" should be "${prefix}<type>:<deviceId>"`);
   }
   return deviceId;
 }

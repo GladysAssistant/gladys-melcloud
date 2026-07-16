@@ -2,10 +2,10 @@
 // Convert a MELCloud device entry (from User/ListDevices) into a Gladys
 // discovered-device payload.
 //
-// External id scheme (built with gladys.externalId(), mandatory prefix
+// External id scheme (built with gladys.externalIds(), mandatory prefix
 // `ext:<selector>:`):
-//   device  -> ext:<selector>:<DeviceID>
-//   feature -> ext:<selector>:<DeviceID>:<power|mode|temperature>
+//   device  -> ext:<selector>:<type>:<DeviceID>     e.g. ext:melcloud:air-to-air:123
+//   feature -> ext:<selector>:<type>:<DeviceID>:<power|mode|temperature>
 //
 // The MELCloud BuildingID is stored as a device param: Gladys sends the params
 // back with every poll / set-value command, and Device/Get requires it.
@@ -16,17 +16,26 @@ import { buildAirToAirFeatures } from './airToAir.js';
 
 export const BUILDING_ID_PARAM = 'buildingID';
 
+// Namespace of the external ids, per MELCloud device type.
+const DEVICE_TYPE_SLUGS = {
+  [MELCLOUD_DEVICE_TYPES.AIR_TO_AIR]: 'air-to-air',
+  [MELCLOUD_DEVICE_TYPES.AIR_TO_WATER]: 'air-to-water',
+  [MELCLOUD_DEVICE_TYPES.ENERGY_RECOVERY_VENTILATION]: 'energy-recovery-ventilation',
+};
+
 /**
  * @param {import('@gladysassistant/integration-sdk').GladysIntegration} gladys
  * @param {object} melCloudDevice MELCloud device entry
  * @returns {object} Gladys discovered device
  */
 export function convertDevice(gladys, melCloudDevice) {
-  const externalId = gladys.externalId(String(melCloudDevice.DeviceID));
+  const deviceType = melCloudDevice.Device?.DeviceType;
+  const slug = DEVICE_TYPE_SLUGS[deviceType] ?? 'unknown';
+  const ids = gladys.externalIds(slug, String(melCloudDevice.DeviceID));
 
   const gladysDevice = {
     name: melCloudDevice.DeviceName,
-    external_id: externalId,
+    external_id: ids.device,
     model: melCloudDevice.Device?.Units?.[0]?.Model ?? null,
     poll_frequency: POLL_FREQUENCY,
     should_poll: true,
@@ -39,9 +48,9 @@ export function convertDevice(gladys, melCloudDevice) {
     ],
   };
 
-  switch (melCloudDevice.Device?.DeviceType) {
+  switch (deviceType) {
     case MELCLOUD_DEVICE_TYPES.AIR_TO_AIR:
-      gladysDevice.features = buildAirToAirFeatures(externalId, melCloudDevice);
+      gladysDevice.features = buildAirToAirFeatures(ids.device, melCloudDevice);
       break;
     case MELCLOUD_DEVICE_TYPES.AIR_TO_WATER:
     case MELCLOUD_DEVICE_TYPES.ENERGY_RECOVERY_VENTILATION:

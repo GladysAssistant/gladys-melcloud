@@ -5,7 +5,7 @@ import { buildAirToAirFeatures, buildPollStates, buildSetAtaChanges } from '../s
 import { AC_MODE } from '../src/constants.js';
 import { AIR_TO_AIR_DEVICE, DEVICE_STATE } from './fixtures.js';
 
-const EXTERNAL_ID = 'ext:melcloud:123';
+const EXTERNAL_ID = 'ext:melcloud:air-to-air:123';
 
 test('buildAirToAirFeatures exposes power, mode and target temperature', () => {
   const features = buildAirToAirFeatures(EXTERNAL_ID, AIR_TO_AIR_DEVICE);
@@ -14,15 +14,15 @@ test('buildAirToAirFeatures exposes power, mode and target temperature', () => {
   const [power, mode, temperature] = features;
   assert.deepEqual(
     { external_id: power.external_id, category: power.category, type: power.type },
-    { external_id: 'ext:melcloud:123:power', category: 'air-conditioning', type: 'binary' },
+    { external_id: 'ext:melcloud:air-to-air:123:power', category: 'air-conditioning', type: 'binary' },
   );
   assert.deepEqual(
     { external_id: mode.external_id, category: mode.category, type: mode.type },
-    { external_id: 'ext:melcloud:123:mode', category: 'air-conditioning', type: 'mode' },
+    { external_id: 'ext:melcloud:air-to-air:123:mode', category: 'air-conditioning', type: 'mode' },
   );
   assert.deepEqual(
     { external_id: temperature.external_id, category: temperature.category, type: temperature.type },
-    { external_id: 'ext:melcloud:123:temperature', category: 'air-conditioning', type: 'target-temperature' },
+    { external_id: 'ext:melcloud:air-to-air:123:temperature', category: 'air-conditioning', type: 'target-temperature' },
   );
   // The temperature bounds come from the MELCloud unit.
   assert.equal(temperature.min, 16);
@@ -37,17 +37,17 @@ test('buildAirToAirFeatures exposes power, mode and target temperature', () => {
 test('buildPollStates maps the MELCloud state to Gladys states', () => {
   const states = buildPollStates(EXTERNAL_ID, DEVICE_STATE);
   assert.deepEqual(states, [
-    { device_feature_external_id: 'ext:melcloud:123:power', state: 1 },
-    { device_feature_external_id: 'ext:melcloud:123:mode', state: AC_MODE.HEATING },
-    { device_feature_external_id: 'ext:melcloud:123:temperature', state: 21 },
+    { device_feature_external_id: 'ext:melcloud:air-to-air:123:power', state: 1 },
+    { device_feature_external_id: 'ext:melcloud:air-to-air:123:mode', state: AC_MODE.HEATING },
+    { device_feature_external_id: 'ext:melcloud:air-to-air:123:temperature', state: 21 },
   ]);
 });
 
 test('buildPollStates skips an unknown MELCloud mode', () => {
   const states = buildPollStates(EXTERNAL_ID, { ...DEVICE_STATE, Power: false, OperationMode: 99 });
   assert.deepEqual(states, [
-    { device_feature_external_id: 'ext:melcloud:123:power', state: 0 },
-    { device_feature_external_id: 'ext:melcloud:123:temperature', state: 21 },
+    { device_feature_external_id: 'ext:melcloud:air-to-air:123:power', state: 0 },
+    { device_feature_external_id: 'ext:melcloud:air-to-air:123:temperature', state: 21 },
   ]);
 });
 

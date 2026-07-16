@@ -154,17 +154,17 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
     const devices = gladys.state.discoveredDevicePosts.at(-1);
     assert.equal(devices.length, 2);
 
-    const airToAir = devices.find((d) => d.external_id === `ext:${SELECTOR}:123`);
+    const airToAir = devices.find((d) => d.external_id === `ext:${SELECTOR}:air-to-air:123`);
     assert.equal(airToAir.name, 'Living room AC');
     assert.equal(airToAir.poll_frequency, 10000);
     assert.equal(airToAir.should_poll, true);
     assert.deepEqual(airToAir.params, [{ name: 'buildingID', value: 456 }]);
     assert.deepEqual(
       airToAir.features.map((f) => f.external_id),
-      [`ext:${SELECTOR}:123:power`, `ext:${SELECTOR}:123:mode`, `ext:${SELECTOR}:123:temperature`],
+      [`ext:${SELECTOR}:air-to-air:123:power`, `ext:${SELECTOR}:air-to-air:123:mode`, `ext:${SELECTOR}:air-to-air:123:temperature`],
     );
 
-    const airToWater = devices.find((d) => d.external_id === `ext:${SELECTOR}:789`);
+    const airToWater = devices.find((d) => d.external_id === `ext:${SELECTOR}:air-to-water:789`);
     assert.deepEqual(airToWater.features, []);
   });
 
@@ -176,8 +176,8 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
   });
 
   const pollDevice = {
-    external_id: `ext:${SELECTOR}:123`,
-    selector: `ext-${SELECTOR}-123`,
+    external_id: `ext:${SELECTOR}:air-to-air:123`,
+    selector: `ext-${SELECTOR}-air-to-air-123`,
     params: [{ name: 'buildingID', value: 456 }],
   };
 
@@ -190,9 +190,9 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
 
     const states = gladys.state.statePosts.at(-1);
     assert.deepEqual(states, [
-      { device_feature_external_id: `ext:${SELECTOR}:123:power`, state: 1 },
-      { device_feature_external_id: `ext:${SELECTOR}:123:mode`, state: AC_MODE.HEATING },
-      { device_feature_external_id: `ext:${SELECTOR}:123:temperature`, state: 21 },
+      { device_feature_external_id: `ext:${SELECTOR}:air-to-air:123:power`, state: 1 },
+      { device_feature_external_id: `ext:${SELECTOR}:air-to-air:123:mode`, state: AC_MODE.HEATING },
+      { device_feature_external_id: `ext:${SELECTOR}:air-to-air:123:temperature`, state: 21 },
     ]);
 
     const get = melcloud.requests.at(-1);
@@ -204,7 +204,7 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
       message_id: 'set-1',
       device: pollDevice,
       device_feature: {
-        external_id: `ext:${SELECTOR}:123:mode`,
+        external_id: `ext:${SELECTOR}:air-to-air:123:mode`,
         category: 'air-conditioning',
         type: 'mode',
       },
@@ -228,7 +228,7 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
     send('external-integration.device.set-value', {
       message_id: 'set-2',
       device: pollDevice,
-      device_feature: { external_id: `ext:${SELECTOR}:123:unknown`, category: 'air-conditioning', type: 'mode' },
+      device_feature: { external_id: `ext:${SELECTOR}:air-to-air:123:unknown`, category: 'air-conditioning', type: 'mode' },
       value: 1,
     });
     await waitUntil(() => gladys.state.commandResults.some((r) => r.message_id === 'set-2'), `fail ack\n${output}`);
