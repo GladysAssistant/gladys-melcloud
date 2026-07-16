@@ -1,19 +1,10 @@
 // -----------------------------------------------------------------------------
-// Standard Gladys device-feature constants + MELCloud protocol constants.
+// MELCloud protocol constants + the few Gladys values the SDK does not export.
 //
-// The Gladys values are the canonical category / type strings understood by
-// Gladys (reference: server/utils/constants.js in the Gladys repository).
+// The standard Gladys feature categories / types / units come straight from
+// the SDK (DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES,
+// DEVICE_FEATURE_UNITS) — only integration-specific values live here.
 // -----------------------------------------------------------------------------
-
-export const CATEGORY = {
-  AIR_CONDITIONING: 'air-conditioning',
-};
-
-export const TYPE = {
-  BINARY: 'binary',
-  MODE: 'mode',
-  TARGET_TEMPERATURE: 'target-temperature',
-};
 
 // Gladys air-conditioning modes (server/utils/constants.js: AC_MODE).
 export const AC_MODE = {

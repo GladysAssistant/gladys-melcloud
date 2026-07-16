@@ -47,14 +47,19 @@ it reproduces the behaviour of the built-in Gladys MELCloud service.
 │  ├─ melcloud/client.js             # MELCloud cloud API client (fetch)
 │  ├─ devices/convertDevice.js       # MELCloud device -> Gladys discovery payload
 │  ├─ devices/airToAir.js            # air-to-air features + value mappings
-│  ├─ constants.js                   # Gladys + MELCloud constants
-│  ├─ config.js                      # config defaults + normalization
-│  └─ logger.js                      # tiny console logger
+│  ├─ constants.js                   # MELCloud constants (+ AC modes, poll frequency)
+│  └─ config.js                      # config defaults + normalization
 ├─ test/                             # node:test unit + end-to-end tests
 ├─ gladys-assistant-integration.json # manifest (name, config schema, image…)
 ├─ Dockerfile                        # Node 24 Alpine, read-only rootfs ready
 └─ .github/workflows/build.yml       # multi-arch build on git tag
 ```
+
+The common plumbing comes straight from the SDK (v0.2.0+): the leveled
+`logger` / `createLogger({ name })` (driven by the `LOG_LEVEL` env var), the
+standard Gladys `DEVICE_FEATURE_CATEGORIES` / `DEVICE_FEATURE_TYPES`
+constants, and `gladys.handleShutdown()` for the graceful SIGTERM/SIGINT
+handling.
 
 ## Run it locally
 

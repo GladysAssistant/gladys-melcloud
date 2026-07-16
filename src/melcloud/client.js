@@ -12,8 +12,11 @@
 // again once with the stored credentials and retries the request.
 // -----------------------------------------------------------------------------
 
+import { createLogger } from '@gladysassistant/integration-sdk';
+
 import { MELCLOUD_ENDPOINT } from '../constants.js';
-import { logger } from '../logger.js';
+
+const logger = createLogger({ name: 'melcloud' });
 
 const REQUEST_TIMEOUT_MS = 5000;
 
@@ -44,7 +47,7 @@ export class MELCloudClient {
   async login(username, password) {
     this.contextKey = null;
     this.credentials = { username, password };
-    logger.debug('[melcloud] Logging in...');
+    logger.debug('Logging in...');
     const response = await this.#fetchJson('Login/ClientLogin', {
       method: 'POST',
       headers: { ...DEFAULT_HEADERS, 'Content-Type': 'application/json' },
@@ -61,7 +64,7 @@ export class MELCloudClient {
       throw new Error(`MELCloud login failed: ${response.ErrorMessage || `error ${response.ErrorId}`}`);
     }
     this.contextKey = response.LoginData.ContextKey;
-    logger.info('[melcloud] Logged in');
+    logger.info('Logged in');
   }
 
   logout() {
@@ -87,7 +90,7 @@ export class MELCloudClient {
       });
     });
 
-    logger.debug(`[melcloud] ${devices.length} devices loaded`);
+    logger.debug(`${devices.length} devices loaded`);
     return devices;
   }
 
@@ -137,7 +140,7 @@ export class MELCloudClient {
       return await doRequest();
     } catch (e) {
       if (e.status === 401 && this.credentials) {
-        logger.warn('[melcloud] Session expired, logging in again...');
+        logger.warn('Session expired, logging in again...');
         await this.login(this.credentials.username, this.credentials.password);
         return doRequest();
       }

@@ -7,7 +7,9 @@
 //   - temperature (air-conditioning / target-temperature)
 // -----------------------------------------------------------------------------
 
-import { AC_MODE, CATEGORY, EFFECTIVE_FLAGS, FEATURE_CODES, TYPE } from '../constants.js';
+import { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } from '@gladysassistant/integration-sdk';
+
+import { AC_MODE, EFFECTIVE_FLAGS, FEATURE_CODES } from '../constants.js';
 
 // MELCloud OperationMode <-> Gladys AC_MODE.
 const MODES_MELCLOUD_TO_GLADYS = {
@@ -41,8 +43,8 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
       has_feedback: true,
       min: 0,
       max: 1,
-      category: CATEGORY.AIR_CONDITIONING,
-      type: TYPE.BINARY,
+      category: DEVICE_FEATURE_CATEGORIES.AIR_CONDITIONING,
+      type: DEVICE_FEATURE_TYPES.AIR_CONDITIONING.BINARY,
     },
     {
       name: 'Mode',
@@ -51,8 +53,8 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
       has_feedback: true,
       min: 0,
       max: 1,
-      category: CATEGORY.AIR_CONDITIONING,
-      type: TYPE.MODE,
+      category: DEVICE_FEATURE_CATEGORIES.AIR_CONDITIONING,
+      type: DEVICE_FEATURE_TYPES.AIR_CONDITIONING.MODE,
     },
     {
       name: 'Temperature',
@@ -61,8 +63,8 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
       has_feedback: true,
       min: melCloudDevice.MinTemperature,
       max: melCloudDevice.MaxTemperature,
-      category: CATEGORY.AIR_CONDITIONING,
-      type: TYPE.TARGET_TEMPERATURE,
+      category: DEVICE_FEATURE_CATEGORIES.AIR_CONDITIONING,
+      type: DEVICE_FEATURE_TYPES.AIR_CONDITIONING.TARGET_TEMPERATURE,
     },
   ];
 }
