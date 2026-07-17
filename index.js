@@ -34,11 +34,15 @@ let config = normalizeConfig();
 function parseDeviceId(externalId) {
   const prefix = gladys.externalId('');
   if (!externalId || !externalId.startsWith(prefix)) {
-    throw new Error(`MELCloud device external_id is invalid: "${externalId}" should start with "${prefix}"`);
+    throw new Error(
+      `MELCloud device external_id is invalid: "${externalId}" should start with "${prefix}"`,
+    );
   }
   const deviceId = externalId.split(':').pop();
   if (!deviceId || externalId.slice(prefix.length).split(':').length !== 2) {
-    throw new Error(`MELCloud device external_id is invalid: "${externalId}" should be "${prefix}<type>:<deviceId>"`);
+    throw new Error(
+      `MELCloud device external_id is invalid: "${externalId}" should be "${prefix}<type>:<deviceId>"`,
+    );
   }
   return deviceId;
 }
@@ -50,7 +54,9 @@ function parseDeviceId(externalId) {
 async function connectToMELCloud() {
   if (!config.username || !config.password) {
     melcloud.logout();
-    logger.warn('MELCloud is not configured yet: fill in the email and password in the integration settings');
+    logger.warn(
+      'MELCloud is not configured yet: fill in the email and password in the integration settings',
+    );
     return false;
   }
   await melcloud.login(config.username, config.password);
@@ -63,7 +69,9 @@ async function connectToMELCloud() {
 async function publishDevices() {
   const melCloudDevices = await melcloud.listDevices();
   logger.info(`${melCloudDevices.length} MELCloud devices found`);
-  await gladys.publishDiscoveredDevices(melCloudDevices.map((device) => convertDevice(gladys, device)));
+  await gladys.publishDiscoveredDevices(
+    melCloudDevices.map((device) => convertDevice(gladys, device)),
+  );
 }
 
 // --- Discovery: Gladys asks for the list of devices --------------------------

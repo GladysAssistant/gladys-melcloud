@@ -20,11 +20,11 @@ it reproduces the behaviour of the built-in Gladys MELCloud service.
   them from the Gladys Discovery screen.
 - **Air-to-air units** (`DeviceType 0`) expose three features:
 
-  | Feature | Category / type | Mapping |
-  |---------|-----------------|---------|
-  | Power | `air-conditioning` / `binary` | MELCloud `Power` |
-  | Mode | `air-conditioning` / `mode` | MELCloud `OperationMode` (heat / dry / cool / fan / auto) |
-  | Temperature | `air-conditioning` / `target-temperature` | MELCloud `SetTemperature`, bounded by the unit min/max |
+  | Feature     | Category / type                           | Mapping                                                   |
+  | ----------- | ----------------------------------------- | --------------------------------------------------------- |
+  | Power       | `air-conditioning` / `binary`             | MELCloud `Power`                                          |
+  | Mode        | `air-conditioning` / `mode`               | MELCloud `OperationMode` (heat / dry / cool / fan / auto) |
+  | Temperature | `air-conditioning` / `target-temperature` | MELCloud `SetTemperature`, bounded by the unit min/max    |
 
   Air-to-water and ventilation units are listed without features (not
   supported yet, like in the built-in service).
