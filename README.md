@@ -52,7 +52,9 @@ it reproduces the behaviour of the built-in Gladys MELCloud service.
 ├─ test/                             # node:test unit + end-to-end tests
 ├─ gladys-assistant-integration.json # manifest (name, config schema, image…)
 ├─ Dockerfile                        # Node 24 Alpine, read-only rootfs ready
-└─ .github/workflows/build.yml       # multi-arch build on git tag
+├─ .github/workflows/ci.yml          # lint, format check and tests
+├─ .github/workflows/release.yml     # UI-driven release: bump + tag + build
+└─ .github/workflows/build.yml       # multi-arch build (git tag or called by release)
 ```
 
 The common plumbing comes straight from the SDK (v0.2.0+): the leveled
