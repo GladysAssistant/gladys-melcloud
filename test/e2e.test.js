@@ -37,7 +37,11 @@ function startFakeMELCloud() {
     });
     req.on('end', () => {
       const url = new URL(req.url, 'http://localhost');
-      requests.push({ method: req.method, path: url.pathname, body: body ? JSON.parse(body) : null });
+      requests.push({
+        method: req.method,
+        path: url.pathname,
+        body: body ? JSON.parse(body) : null,
+      });
       res.writeHead(200, { 'Content-Type': 'application/json' });
       if (url.pathname === '/Login/ClientLogin') {
         res.end(JSON.stringify({ ErrorId: null, LoginData: { ContextKey: 'ctx' } }));
@@ -143,35 +147,48 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
 
   const send = (type, payload) => gladys.state.ws.send(JSON.stringify({ type, payload }));
 
-  await t.test('on connection: logs in to MELCloud and publishes the discovered devices', async () => {
-    await waitUntil(() => gladys.state.discoveredDevicePosts.length >= 1, `initial discovery\n${output}`);
+  await t.test(
+    'on connection: logs in to MELCloud and publishes the discovered devices',
+    async () => {
+      await waitUntil(
+        () => gladys.state.discoveredDevicePosts.length >= 1,
+        `initial discovery\n${output}`,
+      );
 
-    const login = melcloud.requests.find((r) => r.path === '/Login/ClientLogin');
-    assert.ok(login, 'the integration logged in to MELCloud');
-    assert.equal(login.body.Email, 'user@example.com');
-    assert.equal(login.body.Password, 'secret');
+      const login = melcloud.requests.find((r) => r.path === '/Login/ClientLogin');
+      assert.ok(login, 'the integration logged in to MELCloud');
+      assert.equal(login.body.Email, 'user@example.com');
+      assert.equal(login.body.Password, 'secret');
 
-    const devices = gladys.state.discoveredDevicePosts.at(-1);
-    assert.equal(devices.length, 2);
+      const devices = gladys.state.discoveredDevicePosts.at(-1);
+      assert.equal(devices.length, 2);
 
-    const airToAir = devices.find((d) => d.external_id === `ext:${SELECTOR}:air-to-air:123`);
-    assert.equal(airToAir.name, 'Living room AC');
-    assert.equal(airToAir.poll_frequency, 10000);
-    assert.equal(airToAir.should_poll, true);
-    assert.deepEqual(airToAir.params, [{ name: 'buildingID', value: 456 }]);
-    assert.deepEqual(
-      airToAir.features.map((f) => f.external_id),
-      [`ext:${SELECTOR}:air-to-air:123:power`, `ext:${SELECTOR}:air-to-air:123:mode`, `ext:${SELECTOR}:air-to-air:123:temperature`],
-    );
+      const airToAir = devices.find((d) => d.external_id === `ext:${SELECTOR}:air-to-air:123`);
+      assert.equal(airToAir.name, 'Living room AC');
+      assert.equal(airToAir.poll_frequency, 10000);
+      assert.equal(airToAir.should_poll, true);
+      assert.deepEqual(airToAir.params, [{ name: 'buildingID', value: 456 }]);
+      assert.deepEqual(
+        airToAir.features.map((f) => f.external_id),
+        [
+          `ext:${SELECTOR}:air-to-air:123:power`,
+          `ext:${SELECTOR}:air-to-air:123:mode`,
+          `ext:${SELECTOR}:air-to-air:123:temperature`,
+        ],
+      );
 
-    const airToWater = devices.find((d) => d.external_id === `ext:${SELECTOR}:air-to-water:789`);
-    assert.deepEqual(airToWater.features, []);
-  });
+      const airToWater = devices.find((d) => d.external_id === `ext:${SELECTOR}:air-to-water:789`);
+      assert.deepEqual(airToWater.features, []);
+    },
+  );
 
   await t.test('a scan request republishes the devices', async () => {
     const before = gladys.state.discoveredDevicePosts.length;
     send('external-integration.scan-request', {});
-    await waitUntil(() => gladys.state.discoveredDevicePosts.length > before, `scan republish\n${output}`);
+    await waitUntil(
+      () => gladys.state.discoveredDevicePosts.length > before,
+      `scan republish\n${output}`,
+    );
     assert.equal(gladys.state.discoveredDevicePosts.at(-1).length, 2);
   });
 
@@ -183,7 +200,10 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
 
   await t.test('a poll command publishes the device states', async () => {
     send('external-integration.device.poll', { message_id: 'poll-1', device: pollDevice });
-    await waitUntil(() => gladys.state.commandResults.some((r) => r.message_id === 'poll-1'), `poll ack\n${output}`);
+    await waitUntil(
+      () => gladys.state.commandResults.some((r) => r.message_id === 'poll-1'),
+      `poll ack\n${output}`,
+    );
 
     const ack = gladys.state.commandResults.find((r) => r.message_id === 'poll-1');
     assert.equal(ack.success, true, ack.error);
@@ -210,7 +230,10 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
       },
       value: AC_MODE.COOLING,
     });
-    await waitUntil(() => gladys.state.commandResults.some((r) => r.message_id === 'set-1'), `set ack\n${output}`);
+    await waitUntil(
+      () => gladys.state.commandResults.some((r) => r.message_id === 'set-1'),
+      `set ack\n${output}`,
+    );
 
     const ack = gladys.state.commandResults.find((r) => r.message_id === 'set-1');
     assert.equal(ack.success, true, ack.error);
@@ -228,10 +251,17 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
     send('external-integration.device.set-value', {
       message_id: 'set-2',
       device: pollDevice,
-      device_feature: { external_id: `ext:${SELECTOR}:air-to-air:123:unknown`, category: 'air-conditioning', type: 'mode' },
+      device_feature: {
+        external_id: `ext:${SELECTOR}:air-to-air:123:unknown`,
+        category: 'air-conditioning',
+        type: 'mode',
+      },
       value: 1,
     });
-    await waitUntil(() => gladys.state.commandResults.some((r) => r.message_id === 'set-2'), `fail ack\n${output}`);
+    await waitUntil(
+      () => gladys.state.commandResults.some((r) => r.message_id === 'set-2'),
+      `fail ack\n${output}`,
+    );
     const ack = gladys.state.commandResults.find((r) => r.message_id === 'set-2');
     assert.equal(ack.success, false);
     assert.match(ack.error, /not controllable/);

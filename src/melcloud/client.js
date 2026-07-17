@@ -61,7 +61,9 @@ export class MELCloudClient {
       }),
     });
     if (response.ErrorId) {
-      throw new Error(`MELCloud login failed: ${response.ErrorMessage || `error ${response.ErrorId}`}`);
+      throw new Error(
+        `MELCloud login failed: ${response.ErrorMessage || `error ${response.ErrorId}`}`,
+      );
     }
     this.contextKey = response.LoginData.ContextKey;
     logger.info('Logged in');
@@ -156,7 +158,9 @@ export class MELCloudClient {
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     if (!response.ok) {
-      const error = new Error(`MELCloud request failed: ${method} ${path} -> HTTP ${response.status}`);
+      const error = new Error(
+        `MELCloud request failed: ${method} ${path} -> HTTP ${response.status}`,
+      );
       error.status = response.status;
       throw error;
     }

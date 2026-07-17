@@ -7,8 +7,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "check": "node --check index.js && node --check src/config.js && node --check src/constants.js && node --check src/melcloud/client.js && node --check src/devices/airToAir.js && node --check src/devices/convertDevice.js",
-    "test": "node --test \"test/*.test.js\""
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node --test"
   },
   "engines": {
     "node": ">=20"
@@ -17,6 +19,11 @@
     "@gladysassistant/integration-sdk": "^0.3.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.7.0",
+    "prettier": "^3.9.5",
     "ws": "^8.18.0"
   },
   "license": "Apache-2.0"

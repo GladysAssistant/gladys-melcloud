@@ -34,7 +34,10 @@ test('convertDevice lists unsupported device types without features', () => {
 });
 
 test('getBuildingId reads the buildingID param', () => {
-  assert.equal(getBuildingId({ external_id: 'x', params: [{ name: 'buildingID', value: 456 }] }), 456);
+  assert.equal(
+    getBuildingId({ external_id: 'x', params: [{ name: 'buildingID', value: 456 }] }),
+    456,
+  );
   assert.throws(() => getBuildingId({ external_id: 'x', params: [] }), /has no "buildingID" param/);
   assert.throws(() => getBuildingId({ external_id: 'x' }), /has no "buildingID" param/);
 });
