@@ -19,6 +19,10 @@
         "en": "The email address of your MELCloud account.",
         "fr": "L'adresse e-mail de votre compte MELCloud."
       },
+      "placeholder": {
+        "en": "user@example.com",
+        "fr": "utilisateur@exemple.fr"
+      },
       "required": true
     },
     {
@@ -28,6 +32,10 @@
       "description": {
         "en": "The password of your MELCloud account.",
         "fr": "Le mot de passe de votre compte MELCloud."
+      },
+      "placeholder": {
+        "en": "••••••••",
+        "fr": "••••••••"
       },
       "required": true
     }
