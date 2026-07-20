@@ -6,8 +6,8 @@
     "en": "Control your Mitsubishi Electric air conditioners through the MELCloud cloud service.",
     "fr": "Contrôlez vos climatiseurs Mitsubishi Electric via le service cloud MELCloud."
   },
-  "version": "1.0.1",
-  "docker_image": "ghcr.io/gladysassistant/gladys-melcloud:1.0.1",
+  "version": "1.0.2",
+  "docker_image": "ghcr.io/gladysassistant/gladys-melcloud:1.0.2",
   "gladys_version": ">=4.62.0",
   "cover_image": "https://raw.githubusercontent.com/GladysAssistant/gladys-melcloud/master/cover.jpg",
   "config_schema": [

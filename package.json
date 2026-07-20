@@ -1,6 +1,6 @@
 {
   "name": "gladys-melcloud",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "description": "MELCloud external integration for Gladys Assistant: control Mitsubishi Electric air conditioners.",
   "type": "module",
