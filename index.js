@@ -5,7 +5,7 @@
 //   - logs in to MELCloud with the credentials from the integration config;
 //   - publishes the account devices as discovered devices (air-to-air units
 //     expose power / mode / target-temperature features);
-//   - answers the 10-second polls of Gladys with the current device state;
+//   - answers the 10-second polls of Gladys with the device states that changed;
 //   - forwards user commands to MELCloud (Device/SetAta).
 //
 // Environment variables provided by the Gladys supervisor to the container:
@@ -17,6 +17,7 @@
 
 import { GladysIntegration, logger } from '@gladysassistant/integration-sdk';
 import { normalizeConfig } from './src/config.js';
+import { STATE_HEARTBEAT } from './src/constants.js';
 import { MELCloudClient } from './src/melcloud/client.js';
 import { convertDevice, getBuildingId } from './src/devices/convertDevice.js';
 import { buildPollStates, buildSetAtaChanges } from './src/devices/airToAir.js';
@@ -111,10 +112,10 @@ gladys.onPoll(async (device) => {
   const buildingId = getBuildingId(device);
 
   const melCloudState = await melcloud.getDevice(deviceId, buildingId);
-  const states = buildPollStates(device.external_id, melCloudState);
-  if (states.length > 0) {
-    await gladys.publishStates(states);
-  }
+  // Only the values that changed since the last poll are sent to Gladys.
+  await gladys.publishChangedStates(buildPollStates(device.external_id, melCloudState), {
+    heartbeat: STATE_HEARTBEAT,
+  });
 });
 
 // --- Configuration updated by the user ---------------------------------------

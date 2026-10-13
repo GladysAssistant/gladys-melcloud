@@ -7,7 +7,11 @@
 //   - temperature (air-conditioning / target-temperature)
 // -----------------------------------------------------------------------------
 
-import { DEVICE_FEATURE_CATEGORIES, DEVICE_FEATURE_TYPES } from '@gladysassistant/integration-sdk';
+import {
+  DEVICE_FEATURE_CATEGORIES,
+  DEVICE_FEATURE_TYPES,
+  DEVICE_FEATURE_UNITS,
+} from '@gladysassistant/integration-sdk';
 
 import { AC_MODE, EFFECTIVE_FLAGS, FEATURE_CODES } from '../constants.js';
 
@@ -27,6 +31,28 @@ const MODES_GLADYS_TO_MELCLOUD = {
   [AC_MODE.FAN]: 7,
   [AC_MODE.AUTO]: 8,
 };
+
+// Modes an air-to-air unit supports, in display order (supported_options).
+const SUPPORTED_MODES = [
+  { value: AC_MODE.AUTO, label: 'Auto' },
+  { value: AC_MODE.COOLING, label: 'Cooling' },
+  { value: AC_MODE.HEATING, label: 'Heating' },
+  { value: AC_MODE.DRYING, label: 'Drying' },
+  { value: AC_MODE.FAN, label: 'Fan' },
+];
+
+// Setpoint resolution when MELCloud does not report one.
+const DEFAULT_TEMPERATURE_INCREMENT = 0.5;
+
+/**
+ * Setpoint resolution of the unit (0.5 or 1 °C), from User/ListDevices.
+ * @param {object} melCloudDevice MELCloud device entry
+ * @returns {number} the temperature step
+ */
+function getTemperatureIncrement(melCloudDevice) {
+  const increment = melCloudDevice.Device?.TemperatureIncrement;
+  return Number.isFinite(increment) && increment > 0 ? increment : DEFAULT_TEMPERATURE_INCREMENT;
+}
 
 /**
  * Build the Gladys features of an air-to-air unit.
@@ -51,8 +77,9 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
       external_id: `${externalId}:${FEATURE_CODES.MODE}`,
       read_only: false,
       has_feedback: true,
-      min: 0,
-      max: 1,
+      min: Math.min(...SUPPORTED_MODES.map(({ value }) => value)),
+      max: Math.max(...SUPPORTED_MODES.map(({ value }) => value)),
+      supported_options: SUPPORTED_MODES.map((mode, index) => ({ ...mode, sort_order: index })),
       category: DEVICE_FEATURE_CATEGORIES.AIR_CONDITIONING,
       type: DEVICE_FEATURE_TYPES.AIR_CONDITIONING.MODE,
     },
@@ -63,6 +90,8 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
       has_feedback: true,
       min: melCloudDevice.MinTemperature,
       max: melCloudDevice.MaxTemperature,
+      step: getTemperatureIncrement(melCloudDevice),
+      unit: DEVICE_FEATURE_UNITS.CELSIUS,
       category: DEVICE_FEATURE_CATEGORIES.AIR_CONDITIONING,
       type: DEVICE_FEATURE_TYPES.AIR_CONDITIONING.TARGET_TEMPERATURE,
     },
@@ -74,7 +103,7 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
  * States without a known value (e.g. an unknown MELCloud mode) are skipped.
  * @param {string} deviceExternalId external id of the Gladys device
  * @param {object} melCloudState Device/Get response
- * @returns {Array} states for gladys.publishStates()
+ * @returns {Array} states for gladys.publishChangedStates()
  */
 export function buildPollStates(deviceExternalId, melCloudState) {
   return [

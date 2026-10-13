@@ -8,6 +8,7 @@ export const AIR_TO_AIR_DEVICE = {
   MaxTemperature: 31,
   Device: {
     DeviceType: 0,
+    TemperatureIncrement: 0.5,
     Units: [{ Model: 'MSZ-AP25VGK' }],
   },
 };

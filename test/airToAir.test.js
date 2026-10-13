@@ -50,6 +50,38 @@ test('buildAirToAirFeatures exposes power, mode and target temperature', () => {
   });
 });
 
+test('the mode feature declares the supported AC modes', () => {
+  const [, mode] = buildAirToAirFeatures(EXTERNAL_ID, AIR_TO_AIR_DEVICE);
+  assert.equal(mode.min, AC_MODE.AUTO);
+  assert.equal(mode.max, AC_MODE.FAN);
+  assert.deepEqual(mode.supported_options, [
+    { value: AC_MODE.AUTO, label: 'Auto', sort_order: 0 },
+    { value: AC_MODE.COOLING, label: 'Cooling', sort_order: 1 },
+    { value: AC_MODE.HEATING, label: 'Heating', sort_order: 2 },
+    { value: AC_MODE.DRYING, label: 'Drying', sort_order: 3 },
+    { value: AC_MODE.FAN, label: 'Fan', sort_order: 4 },
+  ]);
+  // Every supported mode can be sent to MELCloud.
+  mode.supported_options.forEach(({ value }) => {
+    assert.notEqual(buildSetAtaChanges('mode', value).OperationMode, undefined);
+  });
+});
+
+test('the temperature feature uses the MELCloud setpoint increment, in Celsius', () => {
+  const [, , temperature] = buildAirToAirFeatures(EXTERNAL_ID, AIR_TO_AIR_DEVICE);
+  assert.equal(temperature.unit, 'celsius');
+  assert.equal(temperature.step, 0.5);
+
+  const wholeDegrees = {
+    ...AIR_TO_AIR_DEVICE,
+    Device: { ...AIR_TO_AIR_DEVICE.Device, TemperatureIncrement: 1 },
+  };
+  assert.equal(buildAirToAirFeatures(EXTERNAL_ID, wholeDegrees)[2].step, 1);
+
+  const noIncrement = { ...AIR_TO_AIR_DEVICE, Device: { DeviceType: 0 } };
+  assert.equal(buildAirToAirFeatures(EXTERNAL_ID, noIncrement)[2].step, 0.5);
+});
+
 test('buildPollStates maps the MELCloud state to Gladys states', () => {
   const states = buildPollStates(EXTERNAL_ID, DEVICE_STATE);
   assert.deepEqual(states, [

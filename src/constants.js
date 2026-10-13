@@ -19,6 +19,10 @@ export const AC_MODE = {
 // (must be one of the Gladys DEVICE_POLL_FREQUENCIES values, in milliseconds).
 export const POLL_FREQUENCY = 10 * 1000;
 
+// Polls only publish the states that changed; an unchanged value is still
+// re-sent this often so it stays recently dated in Gladys.
+export const STATE_HEARTBEAT = 30 * 60 * 1000;
+
 // MELCloud cloud API. The env var override is only used by the test suite.
 export const MELCLOUD_ENDPOINT = (
   process.env.MELCLOUD_ENDPOINT || 'https://app.melcloud.com/Mitsubishi.Wifi.Client'

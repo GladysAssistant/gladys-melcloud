@@ -219,6 +219,19 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
     assert.equal(get.path, '/Device/Get');
   });
 
+  await t.test('a poll with an unchanged state publishes nothing', async () => {
+    const before = gladys.state.statePosts.length;
+    send('external-integration.device.poll', { message_id: 'poll-2', device: pollDevice });
+    await waitUntil(
+      () => gladys.state.commandResults.some((r) => r.message_id === 'poll-2'),
+      `poll ack\n${output}`,
+    );
+
+    const ack = gladys.state.commandResults.find((r) => r.message_id === 'poll-2');
+    assert.equal(ack.success, true, ack.error);
+    assert.equal(gladys.state.statePosts.length, before);
+  });
+
   await t.test('a set-value command writes the state back to MELCloud', async () => {
     send('external-integration.device.set-value', {
       message_id: 'set-1',
