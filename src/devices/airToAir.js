@@ -32,17 +32,31 @@ const MODES_GLADYS_TO_MELCLOUD = {
   [AC_MODE.AUTO]: 8,
 };
 
-// Modes an air-to-air unit supports, in display order (supported_options).
+// Modes an air-to-air unit can support, in display order (supported_options),
+// with the User/ListDevices `Device` flag telling whether the unit has it
+// (same flags as pymelcloud; the fan mode has none).
 const SUPPORTED_MODES = [
-  { value: AC_MODE.AUTO, label: 'Auto' },
-  { value: AC_MODE.COOLING, label: 'Cooling' },
-  { value: AC_MODE.HEATING, label: 'Heating' },
-  { value: AC_MODE.DRYING, label: 'Drying' },
+  { value: AC_MODE.AUTO, label: 'Auto', flag: 'ModelSupportsAuto' },
+  { value: AC_MODE.COOLING, label: 'Cooling', flag: 'CanCool' },
+  { value: AC_MODE.HEATING, label: 'Heating', flag: 'CanHeat' },
+  { value: AC_MODE.DRYING, label: 'Drying', flag: 'CanDry' },
   { value: AC_MODE.FAN, label: 'Fan' },
 ];
 
 // Setpoint resolution when MELCloud does not report one.
 const DEFAULT_TEMPERATURE_INCREMENT = 0.5;
+
+/**
+ * Modes of the unit: a mode is only left out when MELCloud reports its flag
+ * as false (a missing flag keeps it).
+ * @param {object} melCloudDevice MELCloud device entry
+ * @returns {Array} supported_options of the mode feature
+ */
+function getSupportedModes(melCloudDevice) {
+  return SUPPORTED_MODES.filter(({ flag }) => !flag || melCloudDevice.Device?.[flag] !== false).map(
+    ({ value, label }, index) => ({ value, label, sort_order: index }),
+  );
+}
 
 /**
  * Setpoint resolution of the unit (0.5 or 1 °C), from User/ListDevices.
@@ -61,6 +75,7 @@ function getTemperatureIncrement(melCloudDevice) {
  * @returns {Array} Gladys device features
  */
 export function buildAirToAirFeatures(externalId, melCloudDevice) {
+  const supportedModes = getSupportedModes(melCloudDevice);
   return [
     {
       name: 'Power',
@@ -77,9 +92,9 @@ export function buildAirToAirFeatures(externalId, melCloudDevice) {
       external_id: `${externalId}:${FEATURE_CODES.MODE}`,
       read_only: false,
       has_feedback: true,
-      min: Math.min(...SUPPORTED_MODES.map(({ value }) => value)),
-      max: Math.max(...SUPPORTED_MODES.map(({ value }) => value)),
-      supported_options: SUPPORTED_MODES.map((mode, index) => ({ ...mode, sort_order: index })),
+      min: Math.min(...supportedModes.map(({ value }) => value)),
+      max: Math.max(...supportedModes.map(({ value }) => value)),
+      supported_options: supportedModes,
       category: DEVICE_FEATURE_CATEGORIES.AIR_CONDITIONING,
       type: DEVICE_FEATURE_TYPES.AIR_CONDITIONING.MODE,
     },

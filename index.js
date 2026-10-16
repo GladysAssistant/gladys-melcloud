@@ -96,14 +96,20 @@ gladys.onSetValue(async (device, feature, value) => {
     throw new Error(`MELCloud feature "${feature.external_id}" is not controllable`);
   }
 
-  // MELCloud expects the FULL device state back, with EffectiveFlags marking
-  // what changed: read the current state, merge, write.
-  const currentState = await melcloud.getDevice(deviceId, buildingId);
-  await melcloud.setDeviceState({
-    ...currentState,
-    ...changes,
-    HasPendingCommand: true,
-  });
+  try {
+    // MELCloud expects the FULL device state back, with EffectiveFlags marking
+    // what changed: read the current state, merge, write.
+    const currentState = await melcloud.getDevice(deviceId, buildingId);
+    await melcloud.setDeviceState({
+      ...currentState,
+      ...changes,
+      HasPendingCommand: true,
+    });
+  } finally {
+    // The Gladys UI already shows the commanded value: the next poll re-sends
+    // the real state, even unchanged, in case the command failed or was ignored.
+    gladys.forgetPublishedStates(feature.external_id);
+  }
 });
 
 // --- Polling: Gladys asks to refresh a device (every 10 seconds) -------------

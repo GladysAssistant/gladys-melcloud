@@ -7,7 +7,12 @@ import {
   buildSetAtaChanges,
 } from '../src/devices/airToAir.js';
 import { AC_MODE } from '../src/constants.js';
-import { AIR_TO_AIR_DEVICE, DEVICE_STATE } from './fixtures.js';
+import {
+  AIR_TO_AIR_DEVICE,
+  COOLING_ONLY_DEVICE,
+  DEVICE_STATE,
+  NO_AUTO_DEVICE,
+} from './fixtures.js';
 
 const EXTERNAL_ID = 'ext:melcloud:air-to-air:123';
 
@@ -65,6 +70,37 @@ test('the mode feature declares the supported AC modes', () => {
   mode.supported_options.forEach(({ value }) => {
     assert.notEqual(buildSetAtaChanges('mode', value).OperationMode, undefined);
   });
+});
+
+test('the mode feature only declares the modes the unit supports', () => {
+  const [, coolingOnly] = buildAirToAirFeatures(EXTERNAL_ID, COOLING_ONLY_DEVICE);
+  assert.deepEqual(coolingOnly.supported_options, [
+    { value: AC_MODE.COOLING, label: 'Cooling', sort_order: 0 },
+    { value: AC_MODE.DRYING, label: 'Drying', sort_order: 1 },
+    { value: AC_MODE.FAN, label: 'Fan', sort_order: 2 },
+  ]);
+  assert.equal(coolingOnly.min, AC_MODE.COOLING);
+  assert.equal(coolingOnly.max, AC_MODE.FAN);
+
+  const [, noAuto] = buildAirToAirFeatures(EXTERNAL_ID, NO_AUTO_DEVICE);
+  assert.deepEqual(noAuto.supported_options, [
+    { value: AC_MODE.COOLING, label: 'Cooling', sort_order: 0 },
+    { value: AC_MODE.HEATING, label: 'Heating', sort_order: 1 },
+    { value: AC_MODE.DRYING, label: 'Drying', sort_order: 2 },
+    { value: AC_MODE.FAN, label: 'Fan', sort_order: 3 },
+  ]);
+  assert.equal(noAuto.min, AC_MODE.COOLING);
+  assert.equal(noAuto.max, AC_MODE.FAN);
+
+  // A unit that reports no capability flag keeps every mode.
+  const [, noFlags] = buildAirToAirFeatures(EXTERNAL_ID, {
+    ...AIR_TO_AIR_DEVICE,
+    Device: { DeviceType: 0 },
+  });
+  assert.deepEqual(
+    noFlags.supported_options.map(({ value }) => value),
+    [AC_MODE.AUTO, AC_MODE.COOLING, AC_MODE.HEATING, AC_MODE.DRYING, AC_MODE.FAN],
+  );
 });
 
 test('the temperature feature uses the MELCloud setpoint increment, in Celsius', () => {
