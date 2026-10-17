@@ -219,6 +219,19 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
     assert.equal(get.path, '/Device/Get');
   });
 
+  await t.test('a poll with an unchanged state publishes nothing', async () => {
+    const before = gladys.state.statePosts.length;
+    send('external-integration.device.poll', { message_id: 'poll-2', device: pollDevice });
+    await waitUntil(
+      () => gladys.state.commandResults.some((r) => r.message_id === 'poll-2'),
+      `poll ack\n${output}`,
+    );
+
+    const ack = gladys.state.commandResults.find((r) => r.message_id === 'poll-2');
+    assert.equal(ack.success, true, ack.error);
+    assert.equal(gladys.state.statePosts.length, before);
+  });
+
   await t.test('a set-value command writes the state back to MELCloud', async () => {
     send('external-integration.device.set-value', {
       message_id: 'set-1',
@@ -246,6 +259,30 @@ test('the integration discovers, polls and controls MELCloud devices', async (t)
     assert.equal(setAta.body.HasPendingCommand, true);
     assert.equal(setAta.body.SetTemperature, 21); // untouched, from Device/Get
   });
+
+  await t.test(
+    'the poll after a set-value re-publishes the real state of the feature',
+    async () => {
+      // The fake MELCloud ignores the command: the unit is still heating, a
+      // value the integration already published before the set-value.
+      const before = gladys.state.statePosts.length;
+      send('external-integration.device.poll', { message_id: 'poll-3', device: pollDevice });
+      await waitUntil(
+        () => gladys.state.commandResults.some((r) => r.message_id === 'poll-3'),
+        `poll ack\n${output}`,
+      );
+
+      const ack = gladys.state.commandResults.find((r) => r.message_id === 'poll-3');
+      assert.equal(ack.success, true, ack.error);
+      assert.equal(gladys.state.statePosts.length, before + 1);
+      assert.deepEqual(gladys.state.statePosts.at(-1), [
+        {
+          device_feature_external_id: `ext:${SELECTOR}:air-to-air:123:mode`,
+          state: AC_MODE.HEATING,
+        },
+      ]);
+    },
+  );
 
   await t.test('a set-value command on an unknown feature is acked as failed', async () => {
     send('external-integration.device.set-value', {

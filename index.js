@@ -5,7 +5,7 @@
 //   - logs in to MELCloud with the credentials from the integration config;
 //   - publishes the account devices as discovered devices (air-to-air units
 //     expose power / mode / target-temperature features);
-//   - answers the 10-second polls of Gladys with the current device state;
+//   - answers the 10-second polls of Gladys with the device states that changed;
 //   - forwards user commands to MELCloud (Device/SetAta).
 //
 // Environment variables provided by the Gladys supervisor to the container:
@@ -17,6 +17,7 @@
 
 import { GladysIntegration, logger } from '@gladysassistant/integration-sdk';
 import { normalizeConfig } from './src/config.js';
+import { STATE_HEARTBEAT } from './src/constants.js';
 import { MELCloudClient } from './src/melcloud/client.js';
 import { convertDevice, getBuildingId } from './src/devices/convertDevice.js';
 import { buildPollStates, buildSetAtaChanges } from './src/devices/airToAir.js';
@@ -95,14 +96,20 @@ gladys.onSetValue(async (device, feature, value) => {
     throw new Error(`MELCloud feature "${feature.external_id}" is not controllable`);
   }
 
-  // MELCloud expects the FULL device state back, with EffectiveFlags marking
-  // what changed: read the current state, merge, write.
-  const currentState = await melcloud.getDevice(deviceId, buildingId);
-  await melcloud.setDeviceState({
-    ...currentState,
-    ...changes,
-    HasPendingCommand: true,
-  });
+  try {
+    // MELCloud expects the FULL device state back, with EffectiveFlags marking
+    // what changed: read the current state, merge, write.
+    const currentState = await melcloud.getDevice(deviceId, buildingId);
+    await melcloud.setDeviceState({
+      ...currentState,
+      ...changes,
+      HasPendingCommand: true,
+    });
+  } finally {
+    // The Gladys UI already shows the commanded value: the next poll re-sends
+    // the real state, even unchanged, in case the command failed or was ignored.
+    gladys.forgetPublishedStates(feature.external_id);
+  }
 });
 
 // --- Polling: Gladys asks to refresh a device (every 10 seconds) -------------
@@ -111,10 +118,10 @@ gladys.onPoll(async (device) => {
   const buildingId = getBuildingId(device);
 
   const melCloudState = await melcloud.getDevice(deviceId, buildingId);
-  const states = buildPollStates(device.external_id, melCloudState);
-  if (states.length > 0) {
-    await gladys.publishStates(states);
-  }
+  // Only the values that changed since the last poll are sent to Gladys.
+  await gladys.publishChangedStates(buildPollStates(device.external_id, melCloudState), {
+    heartbeat: STATE_HEARTBEAT,
+  });
 });
 
 // --- Configuration updated by the user ---------------------------------------
