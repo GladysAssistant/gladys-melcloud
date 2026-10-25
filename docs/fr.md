@@ -20,6 +20,7 @@ mais n'exposent pas encore de fonctionnalité.
 
 ## Prérequis
 
+- **Gladys 4.86 ou supérieur.**
 - Un **compte MELCloud** ([app.melcloud.com](https://app.melcloud.com)) avec
   vos climatiseurs déjà enregistrés dedans : chaque unité doit être équipée
   d'une interface Wi-Fi Mitsubishi (par ex. MAC-567IF-E) appairée avec

@@ -19,6 +19,7 @@ feature yet.
 
 ## Prerequisites
 
+- **Gladys 4.86 or later.**
 - A **MELCloud account** ([app.melcloud.com](https://app.melcloud.com)) with
   your air conditioners already registered in it: each unit needs a Mitsubishi
   Wi-Fi interface (e.g. MAC-567IF-E) paired with the MELCloud app.
